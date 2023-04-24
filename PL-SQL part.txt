@@ -1,0 +1,64 @@
+Procedures:
+[CREATE OR REPLACE PROCEDURE proc_group(c_name VARCHAR2) IS
+item_no NUMBER;
+BEGIN
+SELECT COUNT(item_id)
+INTO item_no FROM item WHERE CATEGORY_ID = (SELECT ID FROM item_category WHERE
+NAME = c_name);
+DBMS_OUTPUT.PUT_LINE('Category name: ' || c_name || ' Number of items: ' || item_no);
+END;]
+
+[BEGIN
+proc_group('Laptops');
+END;]
+
+[CREATE OR REPLACE PROCEDURE delete_acc
+IS row_count NUMBER;
+BEGIN
+  DELETE FROM USERT
+  WHERE LAST_LOGIN < '30-SEP-2022';
+  row_count := SQL%ROWCOUNT;
+  DBMS_OUTPUT.PUT_LINE(row_count || ' amount of user accounts were deleted');
+END;]
+
+[BEGIN delete_acc(); END;]
+
+
+Triggers:
+[CREATE OR REPLACE TRIGGER check_name_length
+BEFORE UPDATE OR INSERT ON item
+FOR EACH ROW
+DECLARE
+NAME_L EXCEPTION;
+name_length NUMBER;
+BEGIN
+name_length := LENGTH(:NEW.name);
+IF name_length < 5 THEN
+RAISE NAME_L;
+END IF;
+EXCEPTION
+WHEN NAME_L then
+RAISE_APPLICATION_ERROR(-20001, 'Item name should contain at least 5 characters');
+WHEN OTHERS THEN
+dbms_output.put_line('Error!');
+END;]
+
+[CREATE OR REPLACE TRIGGER show_row
+BEFORE INSERT ON maker
+FOR EACH ROW
+DECLARE
+row_count NUMBER;
+BEGIN
+SELECT COUNT(*) into row_count FROM maker;
+DBMS_OUTPUT.PUT_LINE('Current row count is ' || row_count);
+END;]
+
+Functions:
+[CREATE OR REPLACE FUNCTION count_records(table_name IN VARCHAR2)
+RETURN NUMBER
+IS
+record_count NUMBER;
+BEGIN
+EXECUTE IMMEDIATE 'SELECT COUNT(*) FROM ' || table_name INTO record_count;
+RETURN record_count;
+END;]
